@@ -1,26 +1,161 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+/* Palette sampled straight off public/logo.jpeg: the gold of "JEE" and the
+   arrow, the cream of "SOCIETY", and the crimson ground behind them. */
+@theme {
+  --color-paper: #fdf8ee;
+  --color-surface: #ffffff;
+  --color-surface-2: #f7f0e0;
+  --color-ink: #1b0c0d;
+  --color-crimson: #7b1417;
+  --color-crimson-lit: #a33034;
+  /* Bright gold is for fills, rules and the highlighter; `gold-deep` is the
+     same hue pushed dark enough to clear 4.5:1 as text — both on bare paper
+     and on top of the highlighter wash, which is the tighter of the two. */
+  --color-gold: #e8a021;
+  --color-gold-deep: #7a4b04;
+  --color-cream: #faf4e4;
+  --color-text: #1b0c0d;
+  --color-muted: #6b5a52;
+  --color-wa: #25d366;
   --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-paper);
+  color: var(--color-text);
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+::selection {
+  background: var(--color-gold);
+  color: var(--color-ink);
+}
+
+/* box-shadow rings rather than outline: Chromium recolors author focus
+   outlines for contrast, which makes the ring unpredictable per browser. The
+   inner ring is the paper itself, so it reads as a gap, not a second ring. */
+:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 3px var(--color-paper),
+    0 0 0 6px var(--color-gold-deep);
+}
+
+/* One orchestrated page-load sequence, in order: the hero content rises in,
+   the highlighter draws itself across "Free", then the word inks over to
+   amber and a single sheen crosses the button. Nothing loops. */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes marker-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes marker-ink {
+  from {
+    color: var(--color-ink);
+  }
+  to {
+    color: var(--color-gold-deep);
+  }
+}
+
+/* The sweep spans the button's full width, so translating by 100% of its own
+   width carries it clean off the far edge whatever the button measures. */
+@keyframes sheen {
+  from {
+    transform: translateX(-100%) skewX(-14deg);
+  }
+  to {
+    transform: translateX(100%) skewX(-14deg);
+  }
+}
+
+.rise {
+  animation: rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* pathLength="1" normalises the dash maths, so the stretched paths still
+   reveal evenly left to right. */
+.marker-pass {
+  stroke-dasharray: 1;
+  animation: marker-draw 0.75s cubic-bezier(0.65, 0, 0.35, 1) 0.45s both;
+}
+
+.marker-pass-2 {
+  animation-duration: 0.5s;
+  animation-delay: 0.95s;
+}
+
+.marker-ink {
+  animation: marker-ink 0.45s ease-out 0.7s both;
+}
+
+.sheen {
+  animation: sheen 1.1s cubic-bezier(0.4, 0, 0.2, 1) 1.75s both;
+}
+
+/* Engineering-ruled grid: the paper JEE prep actually happens on. */
+.paper-grid {
+  background-image:
+    linear-gradient(to right, rgba(27, 12, 13, 0.07) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(27, 12, 13, 0.07) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 32%, #000 10%, transparent 72%);
+}
+
+/* The logo's crimson ground, bled up behind the hero. Green is held back
+   entirely for the button, so the CTA is the one cool note on the page. */
+.hero-bloom {
+  background:
+    radial-gradient(
+      ellipse 58% 48% at 50% 22%,
+      rgba(163, 48, 52, 0.12),
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 40% 34% at 50% 6%,
+      rgba(232, 160, 33, 0.22),
+      transparent 72%
+    );
+}
+
+.grain {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.42'/%3E%3C/svg%3E");
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  /* Delays must go too, not just durations: a delayed animation with
+     fill-mode both otherwise holds its hidden "from" state until it fires. */
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+  }
 }
